@@ -6,7 +6,7 @@ import ToastItem from './ToastItem.svelte'
 
 export let options = {}
 export let target = 'default'
-export let wrapper = undefined
+export let wrapper
 
 $: toast._init(target, options)
 
