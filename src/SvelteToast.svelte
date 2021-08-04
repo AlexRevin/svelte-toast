@@ -6,6 +6,7 @@ import ToastItem from './ToastItem.svelte'
 
 export let options = {}
 export let target = 'default'
+export let wrapper = undefined
 
 $: toast._init(target, options)
 
@@ -30,15 +31,17 @@ ul {
 }
 </style>
 
-<ul>
-  {#each items as item (item.id)}
-  <li
-    in:fly={item.intro}
-    out:fade
-    animate:flip={{ duration: 200 }}
-    style={getCss(item.theme)}
-    >
-    <ToastItem {item} />
-  </li>
-  {/each}
-</ul>
+<span class={wrapper}>
+  <ul>
+    {#each items as item (item.id)}
+    <li
+      in:fly={item.intro}
+      out:fade
+      animate:flip={{ duration: 200 }}
+      style={getCss(item.theme)}
+      >
+      <ToastItem {item} />
+    </li>
+    {/each}
+  </ul>
+</span>
