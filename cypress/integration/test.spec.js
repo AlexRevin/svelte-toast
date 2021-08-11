@@ -175,4 +175,40 @@ describe('Integration Tests', () => {
       .get('._toastBtn').click()
       .get('._toastItem').should('not.exist')
   })
+
+  it('Pauses on hover', () => {
+    cy.get('[data-btn=pauseOnMouseHover]').click()
+      .get('._toastItem').trigger('mouseenter')
+      .get('._toastBar').then($bar => {
+        const old = parseFloat($bar.val())
+        cy.wait(50).then(() => {
+          expect(parseFloat($bar.val())).to.equal(old)
+        })
+      })
+      .get('._toastItem').trigger('mouseleave')
+      .get('._toastBar').then($bar => {
+        const old = parseFloat($bar.val())
+        cy.wait(50).then(() => {
+          expect(parseFloat($bar.val())).to.be.below(old)
+        }).get('._toastBtn').click()
+      })
+  })
+
+  it('Does not pause on hover if `pausable` is false', () => {
+    cy.get('[data-btn=default]').click()
+      .get('._toastItem').trigger('mouseenter', { force: true })
+      .get('._toastBar').then($bar => {
+        const old = parseFloat($bar.val())
+        cy.wait(50).then(() => {
+          expect(parseFloat($bar.val())).to.be.below(old)
+        })
+      })
+      .get('._toastItem').trigger('mouseleave', { force: true })
+      .get('._toastBar').then($bar => {
+        const old = parseFloat($bar.val())
+        cy.wait(50).then(() => {
+          expect(parseFloat($bar.val())).to.be.below(old)
+        }).get('._toastBtn').click()
+      })
+  })
 })
