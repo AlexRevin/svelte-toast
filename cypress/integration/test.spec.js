@@ -65,12 +65,24 @@ describe('Integration Tests', () => {
   })
 
   it('Dynamically update progress bar', () => {
-    cy.window()
-      .invoke('toast.push', 'Test', { duration: 1, initial: 0, progress: 0 })
-      .then(id => {
+    cy.window().invoke('toast.push', 'Test', { duration: 1, initial: 0, next: 0 })
+      .then($id => {
         cy.get('._toastBar').then($bar => {
           expect($bar.val()).to.equal(0)
-          cy.window().invoke('toast.set', id, { progress: 0.2 }).wait(50).then(() => {
+          cy.window().invoke('toast.set', $id, { next: 0.2 }).wait(50).then(() => {
+            expect(parseFloat($bar.val())).to.equal(0.2)
+            cy.get('._toastBtn').click()
+          })
+        })
+      })
+  })
+
+  it('Allows backward compatibility for `progress` key', () => {
+    cy.window().invoke('toast.push', 'Test', { duration: 1, initial: 0, progress: 0 })
+      .then($id => {
+        cy.get('._toastBar').then($bar => {
+          expect($bar.val()).to.equal(0)
+          cy.window().invoke('toast.set', $id, { progress: 0.2 }).wait(50).then(() => {
             expect(parseFloat($bar.val())).to.equal(0.2)
             cy.get('._toastBtn').click()
           })
@@ -164,5 +176,51 @@ describe('Integration Tests', () => {
       .contains('Hello')
       .should('not.contain', 'NEW:')
       .window().invoke('toast.pop', 0)
+  })
+
+  it('Uses component', () => {
+    cy.get('[data-btn=sendComponentAsAMessage]').click()
+      .get('._toastItem').contains('A Dummy Cookie Component')
+      .get('[data-btn=default]').click()
+      .get('[data-btn=dummyAccept').click()
+      .get('._toastItem h1').should('not.exist')
+      .get('._toastBtn').click()
+      .get('._toastItem').should('not.exist')
+  })
+
+  it('Pauses on hover', () => {
+    cy.get('[data-btn=pauseOnMouseHover]').click()
+      .get('._toastItem').trigger('mouseenter')
+      .get('._toastBar').then($bar => {
+        const old = parseFloat($bar.val())
+        cy.wait(50).then(() => {
+          expect(parseFloat($bar.val())).to.equal(old)
+        })
+      })
+      .get('._toastItem').trigger('mouseleave')
+      .get('._toastBar').then($bar => {
+        const old = parseFloat($bar.val())
+        cy.wait(50).then(() => {
+          expect(parseFloat($bar.val())).to.be.below(old)
+        }).get('._toastBtn').click()
+      })
+  })
+
+  it('Does not pause on hover if `pausable` is false', () => {
+    cy.get('[data-btn=default]').click()
+      .get('._toastItem').trigger('mouseenter', { force: true })
+      .get('._toastBar').then($bar => {
+        const old = parseFloat($bar.val())
+        cy.wait(50).then(() => {
+          expect(parseFloat($bar.val())).to.be.below(old)
+        })
+      })
+      .get('._toastItem').trigger('mouseleave', { force: true })
+      .get('._toastBar').then($bar => {
+        const old = parseFloat($bar.val())
+        cy.wait(50).then(() => {
+          expect(parseFloat($bar.val())).to.be.below(old)
+        }).get('._toastBtn').click()
+      })
   })
 })

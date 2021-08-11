@@ -6,16 +6,43 @@ import { toast } from './stores.js'
 export let item
 
 const progress = tweened(item.initial, { duration: item.duration, easing: linear })
-
-let prevProgress = item.initial
-
-$: if (prevProgress !== item.progress) {
-  if (item.progress === 1 || item.progress === 0) {
-    progress.set(item.progress).then(() => toast.pop(item.id))
-  } else {
-    progress.set(item.progress)
+const autoclose = () => {
+  if ($progress === 1 || $progress === 0) {
+    toast.pop(item.id)
   }
-  prevProgress = item.progress
+}
+let prev = item.initial
+
+$: if (prev !== item.next) {
+  progress.set(item.next).then(autoclose)
+  prev = item.next
+}
+
+const pause = () => {
+  if (item.pausable) {
+    progress.set($progress, { duration: 0 })
+  }
+}
+
+const play = () => {
+  if (item.pausable) {
+    const pct = ($progress - item.initial) / (item.next - item.initial)
+    const remaining = item.duration - (item.duration * pct)
+    progress.set(item.next, { duration: remaining }).then(autoclose)
+  }
+}
+
+const getProps = () => {
+  const { props = {}, sendIdTo } = item.component
+  if (sendIdTo) {
+    props[sendIdTo] = item.id
+  }
+  return props
+}
+
+// `progress` has been renamed to `next`; shim included for backward compatibility, to remove in next major
+$: if (typeof item.progress !== 'undefined') {
+  item.next = item.progress
 }
 </script>
 
@@ -40,7 +67,7 @@ $: if (prevProgress !== item.progress) {
   padding: var(--toastMsgPadding,0.75rem 0.5rem);
   flex: 1 1 0%;
 }
-._toastMsg :global(a) {
+.pe, ._toastMsg :global(a) {
   pointer-events: auto;
 }
 ._toastBtn {
@@ -52,7 +79,6 @@ $: if (prevProgress !== item.progress) {
   justify-content: center;
   cursor: pointer;
   outline: none;
-  pointer-events: auto;
 }
 ._toastBar {
   display: block;
@@ -77,18 +103,16 @@ $: if (prevProgress !== item.progress) {
 }
 </style>
 
-<div class="_toastItem">
-  <div class="_toastMsg">
+<div class="_toastItem" class:pe={item.pausable} on:mouseenter={pause} on:mouseleave={play}>
+  <div class="_toastMsg" class:pe={item.component}>
     {#if item.component}
-      <svelte:component this="{item.component.src}" { ...item.component.props} toastId={item.id}  />
+    <svelte:component this={item.component.src} {...getProps()} />
     {:else}
-      {@html item.msg}
+    {@html item.msg}
     {/if}
   </div>
-
   {#if item.dismissable}
-  <div class="_toastBtn" role="button" tabindex="-1" on:click={() => toast.pop(item.id)}>✕</div>
+  <div class="_toastBtn pe" role="button" tabindex="-1" on:click={() => toast.pop(item.id)}>✕</div>
   {/if}
-
   <progress class="_toastBar" value={$progress}></progress>
 </div>

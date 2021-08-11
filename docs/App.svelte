@@ -18,7 +18,7 @@ const handleClick = btn => {
   selected = btn.name
   code = btn.code
   btn.run()
-  gtag('event', `toast:${camelCase(btn.name)}`)
+  gtag('event', 'toast', { event_label: btn.name })
 }
 
 const buttons = [
@@ -72,11 +72,11 @@ const buttons = [
     name: 'NON-DISMISSABLE',
     code: `toast.push('Where the close btn?!?', {
   initial: 0,
-  progress: 0,
+  next: 0,
   dismissable: false
 })`,
     run: () => {
-      toast.push('Where the close btn?!?', { initial: 0, progress: 0, dismissable: false })
+      toast.push('Where the close btn?!?', { initial: 0, dismissable: false })
     }
   },
   {
@@ -95,10 +95,10 @@ toast.pop(id)`,
     name: 'FLIP PROGRESS BAR',
     code: `toast.push('Progress bar is flipped', {
   initial: 0,
-  progress: 1
+  next: 1
 })`,
     run: () => {
-      toast.push('Progress bar is flipped', { initial: 0, progress: 1 })
+      toast.push('Progress bar is flipped', { initial: 0, next: 1 })
     }
   },
   {
@@ -108,32 +108,32 @@ toast.pop(id)`,
 const id = toast.push('Loading, please wait...', {
   duration: 300,
   initial: 0,
-  progress: 0,
+  next: 0,
   dismissable: false
 })
 
 await sleep(500)
-toast.set(id, { progress: 0.1 })
+toast.set(id, { next: 0.1 })
 
 await sleep(3000)
-toast.set(id, { progress: 0.7 })
+toast.set(id, { next: 0.7 })
 
 await sleep(1000)
-toast.set(id, { msg: 'Just a bit more', progress: 0.8 })
+toast.set(id, { msg: 'Just a bit more', next: 0.8 })
 
 await sleep(2000)
-toast.set(id, { progress: 1 })`,
+toast.set(id, { next: 1 })`,
     run: async () => {
       const sleep = t => new Promise(resolve => setTimeout(resolve, t))
-      const id = toast.push('Loading, please wait...', { duration: 300, initial: 0, progress: 0, dismissable: false })
+      const id = toast.push('Loading, please wait...', { duration: 300, initial: 0, dismissable: false })
       await sleep(500)
-      toast.set(id, { progress: 0.1 })
+      toast.set(id, { next: 0.1 })
       await sleep(3000)
-      toast.set(id, { progress: 0.7 })
+      toast.set(id, { next: 0.7 })
       await sleep(1000)
-      toast.set(id, { msg: 'Just a bit more', progress: 0.8 })
+      toast.set(id, { msg: 'Just a bit more', next: 0.8 })
       await sleep(2000)
-      toast.set(id, { progress: 1 })
+      toast.set(id, { next: 1 })
     }
   },
   {
@@ -145,6 +145,7 @@ toast.set(id, { progress: 1 })`,
     --toastProgressBackground: aquamarine;
   }
 </style>
+
 <script>
   toast.push('Changed some colors')
 <\/script>`, // eslint-disable-line no-useless-escape
@@ -156,12 +157,12 @@ toast.set(id, { progress: 1 })`,
   {
     name: 'POSITION TO BOTTOM',
     code: `<style>
-:root {
-  --toastContainerTop: auto;
-  --toastContainerRight: auto;
-  --toastContainerBottom: 8rem;
-  --toastContainerLeft: calc(50vw - 8rem);
-}
+  :root {
+    --toastContainerTop: auto;
+    --toastContainerRight: auto;
+    --toastContainerBottom: 8rem;
+    --toastContainerLeft: calc(50vw - 8rem);
+  }
 </style>
 
 <SvelteToast options={{ reversed: true, intro: { y: 192 } }} />
@@ -254,6 +255,38 @@ toast.pop(0)`,
     run: () => {
       toast.pop(i => i.target !== 'new')
     }
+  },
+  {
+    name: 'SEND COMPONENT AS A MESSAGE',
+    code: `toast.push({
+  component: {
+    src: DummyComponent, // where \`src\` is a Svelte component
+    props: {
+      title: 'A Dummy Cookie Component'
+    },
+    sendIdTo: 'toastId' // send toast id to \`toastId\` prop
+  },
+  dismissable: false,
+  initial: 0,
+  theme: {
+    '--toastMsgPadding': '0'
+  }
+})`,
+    run: () => {
+      toast.push({
+        component: { src: DummyComponent, props: { title: 'A Dummy Cookie Component' }, sendIdTo: 'toastId' },
+        dismissable: false,
+        initial: 0,
+        theme: { '--toastMsgPadding': '0' }
+      })
+    }
+  },
+  {
+    name: 'PAUSE ON MOUSE HOVER',
+    code: `toast.push('Hover me!', { pausable: true })`, // eslint-disable-line
+    run: () => {
+      toast.push('Hover me!', { pausable: true })
+    }
   }
 ]
 </script>
@@ -282,32 +315,29 @@ toast.pop(0)`,
   font-size: 0.875rem;
 }
 </style>
-  
-  <div class="container">
-    <div class="w-full h-64 px-2 mt-4 mb-8">
-      <Prism classes="w-full h-full bg-gray-700 text-gray-200 font-mono shadow rounded-sm overflow-scroll p-4">
-        {code}
-      </Prism>
-    </div>
-  
-    <div class="flex flex-row flex-wrap items-center justify-center">
-  
-      {#each buttons as btn}
-      <button
-        class:selected={selected === btn.name}
-        on:click={() => { handleClick(btn) }}
-        data-btn={camelCase(btn.name)}>
-        {btn.name}
-      </button>
-      {/each}
-  
-    </div>
+
+<div class="container">
+  <div class="w-full h-64 px-2 mt-4 mb-8">
+    <Prism classes="w-full h-full bg-gray-700 text-gray-200 font-mono shadow rounded-sm overflow-scroll p-4">
+      {code}
+    </Prism>
   </div>
-  
-  <div class="top">
-    <SvelteToast options={{ initial: 0, intro: { y: -64 } }} target="new" />
+  <div class="flex flex-row flex-wrap items-center justify-center">
+    {#each buttons as btn}
+    <button
+      class:selected={selected === btn.name}
+      on:click={() => { handleClick(btn) }}
+      data-btn={camelCase(btn.name)}>
+      {btn.name}
+    </button>
+    {/each}
   </div>
-  
-  <div class:colors class:bottom>
-    <SvelteToast {options} />
-  </div>
+</div>
+
+<div class="top">
+  <SvelteToast options={{ initial: 0, intro: { y: -64 } }} target="new" />
+</div>
+
+<div class:colors class:bottom>
+  <SvelteToast {options} />
+</div>

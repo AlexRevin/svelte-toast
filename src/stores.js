@@ -2,9 +2,10 @@ import { writable } from 'svelte/store'
 
 const defaults = {
   duration: 4000,
-  dismissable: true,
   initial: 1,
-  progress: 0,
+  next: 0,
+  dismissable: true,
+  pausable: false,
   reversed: false,
   intro: { x: 256 },
   theme: {}
