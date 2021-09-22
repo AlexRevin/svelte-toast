@@ -46,7 +46,7 @@
     "rollup-plugin-svelte": "^7.1.0",
     "rollup-plugin-terser": "^7.0.2",
     "sirv-cli": "^1.0.12",
-    "svelte": "^3.41.0",
+    "svelte": "^3.42.6",
     "tailwindcss": "^2.2.7",
     "typescript": "^4.3.5"
   },
@@ -65,5 +65,8 @@
     "vanillajs",
     "toast",
     "notifications"
-  ]
+  ],
+  "dependencies": {
+    "rollup-plugin-css-only": "^3.1.0"
+  }
 }

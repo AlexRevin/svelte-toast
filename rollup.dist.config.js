@@ -2,6 +2,7 @@ import svelte from 'rollup-plugin-svelte'
 import resolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import { terser } from 'rollup-plugin-terser'
+import css from 'rollup-plugin-css-only'
 import pkg from './package.json'
 
 export default {
@@ -14,10 +15,11 @@ export default {
     svelte({
       compilerOptions: {
         dev: false,
-        css: true
+        css: false
       },
-      emitCss: false
+      emitCss: true
     }),
+    css({ output: 'bundle.css' }),
     resolve({
       browser: true,
       dedupe: ['svelte']

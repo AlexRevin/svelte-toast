@@ -2,6 +2,7 @@ import svelte from 'rollup-plugin-svelte'
 import resolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import livereload from 'rollup-plugin-livereload'
+import css from 'rollup-plugin-css-only'
 import { terser } from 'rollup-plugin-terser'
 
 const production = !process.env.ROLLUP_WATCH
@@ -36,10 +37,11 @@ export default {
     svelte({
       compilerOptions: {
         dev: !production,
-        css: true
+        css: false
       },
-      emitCss: false
+      emitCss: true
     }),
+    css({ output: 'bundle.css' }),
     resolve({
       browser: true,
       dedupe: ['svelte']
